@@ -23,7 +23,7 @@ void* producer(void* v){
 		else {
 			i--;
 		}
-		//assert(0<=items && items <=MAX_ITEMS);
+		assert(0<=items && items <=MAX_ITEMS);
 		printf("%d ", items);
 		pthread_mutex_unlock(&mutex1);
 	}
@@ -33,15 +33,15 @@ void* producer(void* v){
 void* consumer (void* v) {
 	printf("Consumer thread begins!\n");
 	for (int i=0; i<NUM_ITERATIONS; i++) {
+		pthread_mutex_lock(&mutex1);
 		if (items){
-			pthread_mutex_lock(&mutex1);
 			items--;
-			//assert(0<=items && items <=MAX_ITEMS);
-			pthread_mutex_unlock(&mutex1);
+			assert(0<=items && items <=MAX_ITEMS);
 		}
 		//iterations should only count if they successfully consumed
 		else i--;
 		printf("%d ", items);
+		pthread_mutex_unlock(&mutex1);
 	}
   return NULL;
 }
