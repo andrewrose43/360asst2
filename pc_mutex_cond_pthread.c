@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-#define MAX_ITEMS 10
-#define NUM_ITERATIONS 200
-#define NUM_PRODUCERS 2
-#define NUM_CONSUMERS 2
+int items = 0; //The buffer
 
-int items = 0;
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+#define MAX_ITEMS 10 //Max size of buffer
+#define NUM_ITERATIONS 200 //Items to pass through program
+#define NUM_PRODUCERS 2 //Number of threads adding to buffer
+#define NUM_CONSUMERS 2 //Number of threads removing from buffer
+#define RUNS 50 //The number of times to run the threads, to flush out errors
 
 void* producer(void* v){
 	for (int i = 0; i < NUM_ITERATIONS; i++){
@@ -38,25 +39,30 @@ int main(){
 	pthread_t pros[NUM_PRODUCERS];
 	pthread_t cons[NUM_CONSUMERS];
 
-	for (int i = 0; i < NUM_PRODUCERS; i++){
-		if ((error_number=pthread_create(&pros[i], NULL, &producer, NULL))){
-			printf("Producer thread creation failed: %d\n", error_number);
+	//Run it many times to flush out problems
+	for (int run = 1; run <= RUNS; run++){
+	
+		for (int i = 0; i < NUM_PRODUCERS; i++){
+			if ((error_number=pthread_create(&pros[i], NULL, &producer, NULL))){
+				printf("Producer thread creation failed: %d\n", error_number);
+			}
 		}
-	}
-	for (int i = 0; i < NUM_CONSUMERS; i++){
-		if ((error_number=pthread_create(&cons[i], NULL, &consumer, NULL))){
-			printf("Consumer thread creation failed: %d\n", error_number);
+		for (int i = 0; i < NUM_CONSUMERS; i++){
+			if ((error_number=pthread_create(&cons[i], NULL, &consumer, NULL))){
+				printf("Consumer thread creation failed: %d\n", error_number);
+			}
 		}
-	}
 
-	//Wait until threads are done...
-	for (int i = 0; i < NUM_PRODUCERS; i++){
-		pthread_join(pros[i], NULL);
+		//Wait until threads are done...
+		for (int i = 0; i < NUM_PRODUCERS; i++){
+			pthread_join(pros[i], NULL);
+		}
+		for (int i = 0; i < NUM_CONSUMERS; i++){
+			pthread_join(cons[i], NULL);
+		}
+		printf("pc_mutex_cond_pthread run #%d\n", run);
 	}
-	for (int i = 0; i < NUM_CONSUMERS; i++){
-		pthread_join(cons[i], NULL);
-	}
-	printf("pc_mutex_cond_pthread runs!");
+	printf("All runs complete! AW YISS\n");
 	exit(0);
 }
 
