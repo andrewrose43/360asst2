@@ -62,6 +62,11 @@ int main(){
 	for (int run = 1; run <= RUNS; run++){
 
 		//printf("pc_mutex_cond_pthread run #%d\n", run);
+		
+		//Resetting key variables
+
+		producer_wait_count = 0;
+		consumer_wait_count = 0;
 	
 		for (int i = 0; i < NUM_PRODUCERS; i++){
 			if ((error_number=pthread_create(&pros[i], NULL, &producer, NULL))){
