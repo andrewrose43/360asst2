@@ -62,10 +62,12 @@ int main(){
 	pthread_t pros[NUM_PRODUCERS];
 	pthread_t cons[NUM_CONSUMERS];
 
+	#ifdef REPEAT
 	//Run it many times to flush out problems
 	for (int run = 1; run <= RUNS; run++){
+	printf("pc_mutex_cond_pthread run #%d\n", run);
+	#endif
 
-		//printf("pc_mutex_cond_pthread run #%d\n", run);
 		
 		//Resetting key variables
 		producer_wait_count = 0;
@@ -102,10 +104,13 @@ int main(){
 			printf ("  items=%d, %d times\n", i, histogram [i]);
 			sum += histogram [i];
 		}
-
+	
+	#ifdef REPEAT
 		printf("\n\n");
 	}
 	printf("All runs complete!\n\n");
+	#endif
+
 	exit(0);
 }
 
