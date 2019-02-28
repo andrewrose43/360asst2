@@ -15,15 +15,16 @@ pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 #define RUNS 50 //The number of times to run the threads, to flush out errors
 
 void* producer(void* v){
-	printf("Producer thread begins!\n");
-	for (int i = 0; i < NUM_ITERATIONS; i++){
+	//printf("Producer thread begins!\n");
+	for (int i = 0; i < NUM_ITERATIONS; ++i){
 		pthread_mutex_lock(&mutex1);
 		if (items < MAX_ITEMS){
 			//iterations should only count if they successfully produced
 			items++;
 		}
 		else {
-			i--;
+			--i;
+			++producer_wait_count;
 		}
 		assert(0<=items && items <=MAX_ITEMS);
 		//printf("%d ", items);
@@ -33,15 +34,18 @@ void* producer(void* v){
 }
 
 void* consumer (void* v) {
-	printf("Consumer thread begins!\n");
-	for (int i=0; i<NUM_ITERATIONS; i++) {
+	//printf("Consumer thread begins!\n");
+	for (int i=0; i<NUM_ITERATIONS; ++i) {
 		pthread_mutex_lock(&mutex1);
 		if (items){
-			items--;
+			--items;
 			assert(0<=items && items <=MAX_ITEMS);
 		}
 		//iterations should only count if they successfully consumed
-		else i--;
+		else{
+		       --i;
+		       ++consumer_wait_count;
+		}
 		//printf("%d ", items);
 		pthread_mutex_unlock(&mutex1);
 	}
@@ -57,7 +61,7 @@ int main(){
 	//Run it many times to flush out problems
 	for (int run = 1; run <= RUNS; run++){
 
-		printf("pc_mutex_cond_pthread run #%d\n", run);
+		//printf("pc_mutex_cond_pthread run #%d\n", run);
 	
 		for (int i = 0; i < NUM_PRODUCERS; i++){
 			if ((error_number=pthread_create(&pros[i], NULL, &producer, NULL))){
@@ -73,14 +77,16 @@ int main(){
 		//Wait until threads are done...
 		for (int i = 0; i < NUM_PRODUCERS; i++){
 			pthread_join(pros[i], NULL);
-			printf("Producer thread #%d is finished\n", i);
+			//printf("Producer thread #%d is finished\n", i);
 		}
 		for (int i = 0; i < NUM_CONSUMERS; i++){
 			pthread_join(cons[i], NULL);
-			printf("Consumer thread #%d is finished\n", i);
+			//printf("Consumer thread #%d is finished\n", i);
 		}
+	
+		printf("Run %d complete!\nProducer wait count: %d\nConsumer wait count: %d\n\n", run, producer_wait_count, consumer_wait_count);
 	}
-	printf("All runs complete! AW YISS\n");
+	printf("All runs complete!\n\n");
 	exit(0);
 }
 
