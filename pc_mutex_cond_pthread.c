@@ -4,6 +4,8 @@
 #include <assert.h>
 
 int items = 0; //The buffer
+int producer_wait_count;
+int consumer_wait_count;
 
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 #define MAX_ITEMS 10 //Max size of buffer
@@ -24,7 +26,7 @@ void* producer(void* v){
 			i--;
 		}
 		assert(0<=items && items <=MAX_ITEMS);
-		printf("%d ", items);
+		//printf("%d ", items);
 		pthread_mutex_unlock(&mutex1);
 	}
 	return NULL;
@@ -40,7 +42,7 @@ void* consumer (void* v) {
 		}
 		//iterations should only count if they successfully consumed
 		else i--;
-		printf("%d ", items);
+		//printf("%d ", items);
 		pthread_mutex_unlock(&mutex1);
 	}
   return NULL;
