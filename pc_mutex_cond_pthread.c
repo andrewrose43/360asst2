@@ -66,10 +66,10 @@ int main(){
 	//Run it many times to flush out problems
 	for (int run = 1; run <= RUNS; run++){
 		printf("pc_mutex_cond_pthread run #%d\n", run);
+		memset(histogram, 0, sizeof(histogram)); //all elements to 0; only necessary on repeating
 	#endif
-
 		
-		//Resetting key variables
+		//Resetting wait counters
 		producer_wait_count = 0;
 		consumer_wait_count = 0;
 	
