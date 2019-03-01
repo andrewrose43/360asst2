@@ -72,7 +72,6 @@ int main(){
 		//Resetting key variables
 		producer_wait_count = 0;
 		consumer_wait_count = 0;
-		memset(histogram, 0, sizeof(histogram)); //all elements to 0
 	
 		for (int i = 0; i < NUM_PRODUCERS; ++i){
 			if ((error_number=pthread_create(&pros[i], NULL, &producer, NULL))){
