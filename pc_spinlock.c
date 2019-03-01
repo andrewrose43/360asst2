@@ -10,6 +10,7 @@ const int NUM_ITERATIONS = 200;
 const int NUM_CONSUMERS  = 2;
 const int NUM_PRODUCERS  = 2;
 
+spinlock_t lock;	     // The spinlock
 int producer_wait_count;     // # of times producer had to wait
 int consumer_wait_count;     // # of times consumer had to wait
 int histogram [MAX_ITEMS+1]; // histogram [i] == # of times list stored i items
@@ -18,14 +19,18 @@ int items = 0;
 
 void* producer (void* v) {
   for (int i=0; i<NUM_ITERATIONS; i++) {
-    // TODO
+    spinlock_lock(&lock);
+
+    spinlock_unlock(&lock);
   }
   return NULL;
 }
 
 void* consumer (void* v) {
   for (int i=0; i<NUM_ITERATIONS; i++) {
-    // TODO
+    spinlock_lock(&lock);
+
+    spinlock_unlock(&lock);
   }
   return NULL;
 }
@@ -35,6 +40,8 @@ int main (int argc, char** argv) {
 
   uthread_init (4);
   
+  spinlock_create(&lock); //Initialize the spinlock
+
   // TODO: Create Threads and Join
   
   printf ("producer_wait_count=%d\nconsumer_wait_count=%d\n", producer_wait_count, consumer_wait_count);
