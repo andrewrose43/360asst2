@@ -36,14 +36,30 @@ void* consumer (void* v) {
 }
 
 int main (int argc, char** argv) {
-  uthread_t t[4];
+  uthread_t* t[NUM_CONSUMERS+NUM_PRODUCERS];
 
-  uthread_init (4);
+  uthread_init(NUM_CONSUMERS+NUM_PRODUCERS);
   
   spinlock_create(&lock); //Initialize the spinlock
 
-  // TODO: Create Threads and Join
+  //Resetting key variables
+  producer_wait_count = 0;
+  consumer_wait_count = 0;
+  memset(histogram, 0, sizeof(histogram)); //all elements to 0
   
+  //Create the threads!
+  for (int i = 0; i < NUM_PRODUCERS; ++i){
+    t[i] = uthread_create(producer, 0);
+  }
+  for (int i = 0; i < NUM_CONSUMERS; ++i){
+    t[NUM_PRODUCERS+i] = uthread_create(consumer, 0);
+  }
+
+  //Join the threads!
+  for (int i = 0; i < NUM_PRODUCERS+NUM_CONSUMERS; ++i){
+    uthread_join(t[i]);
+  }
+
   printf ("producer_wait_count=%d\nconsumer_wait_count=%d\n", producer_wait_count, consumer_wait_count);
   printf ("items value histogram:\n");
   int sum=0;
