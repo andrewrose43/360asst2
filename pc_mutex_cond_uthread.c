@@ -27,14 +27,14 @@ void* producer (void* v) {
     //Spin on items until items<MAX_ITEMS and there's space in the buffer
     while(items==MAX_ITEMS){
       producer_wait_count = producer_wait_count+1;
-      uthread_cond_wait(&space_available);
+      uthread_cond_wait(space_available);
     }
 
     //Produce
     ++items;
     assert(0<=items && items <=MAX_ITEMS);
-
     ++histogram[items];
+    uthread_cond_signal(item_available);
     
     uthread_mutex_unlock(mutex1);
   }
@@ -44,23 +44,21 @@ void* producer (void* v) {
 void* consumer (void* v) {
   for (int i=0; i<NUM_ITERATIONS; i++) {
     
-    spinlock_lock(&lock);
+    uthread_mutex_lock(mutex1);
 
     //Spin on items until items>0 and there is an item to consume
     while(items==0){
       consumer_wait_count = consumer_wait_count+1;
-      //Give the producer an opportunity to grab the lock and add an item
-      spinlock_unlock(&lock);
-      spinlock_lock(&lock);
+      uthread_cond_wait(item_available);
     }
 
     //Consume
     --items;
     assert(0<=items && items <=MAX_ITEMS);
-
     ++histogram[items];
+    uthread_cond_signal(space_available);
 
-    spinlock_unlock(&lock);
+    uthread_mutex_unlock(mutex1);
   }
   return NULL;
 }
@@ -75,12 +73,15 @@ int main (int argc, char** argv) {
   //Resetting key variables
   producer_wait_count = 0;
   consumer_wait_count = 0;
+
   
   //Create the threads!
   for (int i = 0; i < NUM_PRODUCERS; ++i){
     t[i] = uthread_create(producer, 0);
   }
   for (int i = 0; i < NUM_CONSUMERS; ++i){
+  printf("aasdfasdfsdf\n%d", i);
+  printf("%d", i);
     t[NUM_PRODUCERS+i] = uthread_create(consumer, 0);
   }
 
