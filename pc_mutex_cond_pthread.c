@@ -23,26 +23,15 @@ void* producer(void* v){
 	for (int i = 0; i < NUM_ITERATIONS; ++i){
 		pthread_mutex_lock(&mutex1);
 		
-		while (items==MAX_ITEMS)
+		while (items==MAX_ITEMS){
+			++producer_wait_count;
 			pthread_cond_wait(&space_available, &mutex1);
+		}
 		++items;
 		++histogram[items];
 		assert(0<=items && items <=MAX_ITEMS);
 		pthread_cond_signal(&item_available);
 		
-		/* Old version
-		if (items < MAX_ITEMS){
-			//iterations should only count if they successfully produced
-			++items;
-			++histogram[items];
-		}
-		else {
-			--i;
-			++producer_wait_count;
-		}
-		assert(0<=items && items <=MAX_ITEMS);
-		//printf("%d ", items);
-		*/
 		pthread_mutex_unlock(&mutex1);
 	}
 	return NULL;
@@ -53,26 +42,14 @@ void* consumer (void* v) {
 	for (int i=0; i<NUM_ITERATIONS; ++i) {
 		pthread_mutex_lock(&mutex1);
 
-		while (items==0)
+		while (items==0){
+			++consumer_wait_count;
 			pthread_cond_wait(&item_available, &mutex1);
+		}
 		--items;
 		++histogram[items];
 		assert(0<=items && items <=MAX_ITEMS);
 		pthread_cond_signal(&space_available);
-
-		/* Old version
-		if (items){
-			--items;
-			assert(0<=items && items <=MAX_ITEMS);
-			++histogram[items];
-		}
-		//iterations should only count if they successfully consumed
-		else{
-		       --i;
-		       ++consumer_wait_count;
-		}
-		//printf("%d ", items);
-		*/
 
 		pthread_mutex_unlock(&mutex1);
 	}
