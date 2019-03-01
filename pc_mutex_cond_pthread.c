@@ -127,6 +127,7 @@ int main(){
 			printf ("  items=%d, %d times\n", i, histogram [i]);
 			sum += histogram [i];
 		}
+		assert (sum==(NUM_PRODUCERS+NUM_CONSUMERS)*NUM_ITERATIONS);
 	
 	#ifdef REPEAT
 		printf("\n\n");
