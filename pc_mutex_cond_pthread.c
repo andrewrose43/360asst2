@@ -15,11 +15,22 @@ int producer_wait_count;
 int consumer_wait_count;
 int histogram[MAX_ITEMS+1];
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t item_available = PTHREAD_COND_INITIALIZER;
+pthread_cond_t space_available = PTHREAD_COND_INITIALIZER;
 
 void* producer(void* v){
 	//printf("Producer thread begins!\n");
 	for (int i = 0; i < NUM_ITERATIONS; ++i){
 		pthread_mutex_lock(&mutex1);
+		
+		while (items==MAX_ITEMS)
+			pthread_cond_wait(&space_available, &mutex1);
+		++items;
+		++histogram[items];
+		assert(0<=items && items <=MAX_ITEMS);
+		pthread_cond_signal(&item_available);
+		
+		/* Old version
 		if (items < MAX_ITEMS){
 			//iterations should only count if they successfully produced
 			++items;
@@ -31,6 +42,7 @@ void* producer(void* v){
 		}
 		assert(0<=items && items <=MAX_ITEMS);
 		//printf("%d ", items);
+		*/
 		pthread_mutex_unlock(&mutex1);
 	}
 	return NULL;
@@ -40,6 +52,15 @@ void* consumer (void* v) {
 	//printf("Consumer thread begins!\n");
 	for (int i=0; i<NUM_ITERATIONS; ++i) {
 		pthread_mutex_lock(&mutex1);
+
+		while (items==0)
+			pthread_cond_wait(&item_available, &mutex1);
+		--items;
+		++histogram[items];
+		assert(0<=items && items <=MAX_ITEMS);
+		pthread_cond_signal(&space_available);
+
+		/* Old version
 		if (items){
 			--items;
 			assert(0<=items && items <=MAX_ITEMS);
@@ -51,6 +72,8 @@ void* consumer (void* v) {
 		       ++consumer_wait_count;
 		}
 		//printf("%d ", items);
+		*/
+
 		pthread_mutex_unlock(&mutex1);
 	}
   return NULL;
@@ -65,7 +88,7 @@ int main(){
 	#ifdef REPEAT
 	//Run it many times to flush out problems
 	for (int run = 1; run <= RUNS; run++){
-	printf("pc_mutex_cond_pthread run #%d\n", run);
+		printf("pc_mutex_cond_pthread run #%d\n", run);
 	#endif
 
 		
