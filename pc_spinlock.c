@@ -19,8 +19,9 @@ int items = 0;
 
 void* producer (void* v) {
   for (int i=0; i<NUM_ITERATIONS; i++) {
+    //So how do I "spin on a read of the items variable"?
     spinlock_lock(&lock);
-
+      
     spinlock_unlock(&lock);
   }
   return NULL;
