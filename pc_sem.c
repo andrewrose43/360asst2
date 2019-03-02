@@ -13,16 +13,32 @@ int histogram [MAX_ITEMS+1]; // histogram [i] == # of times list stored i items
 
 int items = 0;
 
+uthread_sem_t mutex1; //The mutex!
+uthread_sem_t empty; //number of free item slots
+uthread_sem_t full; //number of occupied item slots
+
 void* producer (void* v) {
   for (int i=0; i<NUM_ITERATIONS; i++) {
-    // TODO
+    uthread_sem_wait(empty); //wait until there is a space to fill
+    uthread_sem_wait(mutex1); //wait until the lock can be grabbed
+    ++items; 
+    assert(0<=items && items <=MAX_ITEMS);
+    ++histogram[items];
+    uthread_sem_signal(mutex1); //release the lock
+    uthread_sem_signal(full); //there is now one more full slot
   }
   return NULL;
 }
 
 void* consumer (void* v) {
   for (int i=0; i<NUM_ITERATIONS; i++) {
-    // TODO
+    uthread_sem_wait(full); //wait until there are items to consume
+    uthread_sem_wait(mutex1); //wait until the lock can be grabbed
+    --items; 
+    assert(0<=items && items <=MAX_ITEMS);
+    ++histogram[items];
+    uthread_sem_signal(mutex1); //release the lock
+    uthread_sem_signal(empty); //there is now one more empty slot
   }
   return NULL;
 }
@@ -32,7 +48,22 @@ int main (int argc, char** argv) {
 
   uthread_init (4);
 
-  // TODO: Create Threads and Join
+  mutex1 = uthread_sem_create(1);
+  empty = uthread_sem_create(MAX_ITEMS);
+  full = uthread_sem_create(0);
+
+ //Create the threads!
+  for (int i = 0; i < NUM_PRODUCERS; ++i){
+    t[i] = uthread_create(producer, 0);
+  }
+  for (int i = 0; i < NUM_CONSUMERS; ++i){
+    t[NUM_PRODUCERS+i] = uthread_create(consumer, 0);
+  }
+
+  //Join the threads!
+  for (int i = 0; i < NUM_PRODUCERS+NUM_CONSUMERS; ++i){
+    uthread_join(t[i], NULL);
+  }
 
   printf ("items value histogram:\n");
   int sum=0;

@@ -32,8 +32,8 @@ void* producer (void* v) {
 
     //Produce
     ++items;
-    uthread_cond_signal(item_available);
     ++histogram[items];
+    uthread_cond_signal(item_available);
     assert(0<=items && items <=MAX_ITEMS);
     
     uthread_mutex_unlock(mutex1);
@@ -54,8 +54,8 @@ void* consumer (void* v) {
 
     //Consume
     --items;
-    uthread_cond_signal(space_available);
     ++histogram[items];
+    uthread_cond_signal(space_available);
     assert(0<=items && items <=MAX_ITEMS);
     uthread_mutex_unlock(mutex1);
   }
