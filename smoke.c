@@ -62,7 +62,7 @@ uthread_cond_t need_tobacco;
 uthread_cond_t need_match;
 uthread_cond_t need_paper;
 
-struct* AgentPlus ap; //used to pass a resource into each smoker and listener thread
+struct AgentPlus* ap; //used to pass a resource into each smoker and listener thread
 
 //FUNCTION DECLARATIONS
 void* wake_smoker(int availables);
