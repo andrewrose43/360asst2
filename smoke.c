@@ -34,11 +34,11 @@ struct Agent* createAgent() {
 
 //Used to pass the correct resource into each thread
 struct AgentPlus {
-  Agent* ptr_agent;
+  struct Agent* ptr_agent;
   int r;
 };
 
-struct AgentPlus* createAgentPlus(Agent* a, int r_in){
+struct AgentPlus* createAgentPlus(struct Agent* a, int r_in){
   struct AgentPlus* ap = malloc (sizeof (struct AgentPlus));
   ap->ptr_agent = a;
   ap->r = r_in;
@@ -96,9 +96,9 @@ void* agent (void* av) {
   return NULL;
 }
 
-void* listener (void* av){
-  struct Agent* a = av;
-  int r = a->resource_tmp;
+void* listener (void* ap){
+  struct Agent* a = ((struct AgentPlus*)ap)->ptr_agent;
+  int r = ((struct AgentPlus*)ap)->r;
   uthread_mutex_lock(a->mutex);
   for(;;){
     if (r==MATCH){
@@ -136,9 +136,9 @@ void* wake_smoker(int availables){
   availables=0;
 }
 
-void* smoker (void* av){
-  struct Agent* a = av;
-  int r = a->resource_tmp;
+void* smoker (void* ap){
+  struct Agent* a = ((struct AgentPlus*)ap)->ptr_agent;
+  int r = ((struct AgentPlus*)ap)->r;
   uthread_mutex_lock(a->mutex);
   switch(r){
     case MATCH:
