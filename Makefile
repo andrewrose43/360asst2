@@ -4,7 +4,7 @@ TARGETS = pc_spinlock pc_mutex_cond smoke pc_sem_uthread smoke_sem pc_mutex_cond
 OBJS = $(UTHREAD)/uthread.o $(UTHREAD)/uthread_mutex_cond.o $(UTHREAD)/uthread_sem.o
 JUNKF = $(OBJS) *~
 JUNKD = *.dSYM
-CFLAGS  += -g -std=gnu11 -I$(UTHREAD)
+CFLAGS  += -g -std=gnu11 -I$(UTHREAD) -D VERBOSE
 UNAME = $(shell uname)
 ifeq ($(UNAME), Linux)
 LDFLAGS += -pthread
